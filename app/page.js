@@ -1,94 +1,87 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import styles from "./page.module.css";
 
 export default function Home() {
+  const initialFormData = {
+    firstName: "",
+    lastName: "",
+    email: "",
+    message: "",
+  };
+  const [formData, setFormData] = useState(initialFormData);
+  const [isFetching, setIsFetching] = useState(false);
+
+  const handleChange = (event) => {
+    setFormData({ ...formData, [event.target.name]: event.target.value });
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!formData.firstName || !formData.email) return;
+    setIsFetching(true);
+    try {
+      const response = await fetch("/api/send", {
+        method: "POST",
+        body: JSON.stringify({ ...formData }),
+      });
+      setFormData(initialFormData);
+      const { data } = await response.json();
+      if (data) toast.success(`Email ${data.id} was successfully sent!`);
+    } catch (error) {
+      toast.error("Something went wrong", error);
+    }
+    setIsFetching(false);
+  };
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+    <main className={styles["hero"]}>
+      <form className={styles["form"]} onSubmit={handleSubmit}>
+        <legend className={styles["title"]}>Contact Form</legend>
+        <fieldset className={styles["group"]}>
+          <input
+            className={styles["input"]}
+            type="text"
+            name="firstName"
+            placeholder="First name *"
+            value={formData.firstName}
+            onChange={handleChange}
+          />
+          <input
+            className={styles["input"]}
+            type="text"
+            name="lastName"
+            placeholder="Last name"
+            value={formData.lastName}
+            onChange={handleChange}
+          />
+          <input
+            className={styles["input"]}
+            type="text"
+            name="email"
+            placeholder="Email *"
+            value={formData.email}
+            onChange={handleChange}
+          />
+          <textarea
+            className={styles["textarea"]}
+            placeholder="Message"
+            name="message"
+            value={formData.message}
+            onChange={handleChange}
+          ></textarea>
+        </fieldset>
+        <button className={styles["button"]} disabled={isFetching}>
+          Submit
+        </button>
+      </form>
+      <div>
+        <ToastContainer></ToastContainer>
       </div>
     </main>
   );
